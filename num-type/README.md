@@ -45,15 +45,42 @@ if else 一般语法：
         println!("condition was false");
     }
 ```
+loop 关键字告诉Rust反复执行一块代码，直到你喊停
 loop 是一个无限循环，可以用break跳出循环。
 ```
     let mut counter = 0;
-    let result = loop {
-        counter += 1;
+    let result = loop{
+        counter +=1;
         if counter == 10 {
             break counter * 2;
         }
     };
+    println!("The result is {}", result);
+```
+### 另外一种循环是每次执行循环体前都判断一次条件
+while 循环为这种模式而生
+```
+    let mut number = 3;
+    
+    while number != 0 {
+        println!("{}!", number);
+        number -= 1;
+    }
+    println!("LIFT OFF!!!");
 ```
 
+遍历集合使用for循环更简洁紧凑，它可以针对集合中的每个元素来执行一些代码
+```
+    let a = [10, 20, 30, 40, 50];
+    for element in a.iter() {
+        println!("the value is: {}", element);
+    }
+```
+Range: 指定一个开始数字和一个结束数字，Range可以生成他们之间的数组（不含结束）
+```
+    for number in (1..4).rev() {
+        println!("{}!", number);
+    }
+    println!("LIFT OFF!!!");
+```
 
