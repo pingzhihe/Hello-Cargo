@@ -40,6 +40,7 @@ println!("{}", s);
             * 如果重复释放，也会非法
 Rust 采用了不同的方式；对于某个值来说，当拥有它的变量走出作用范围时，内存会立即自动地交还给操作系统。
 这里是自动调用了drop函数。
+* 当变量离开作用域时, Rust 会自动调用drop函数, 并将变量使用的heap内存释放。
 ## 变量与数据交互的方式：移动(Move)
 多个变量可以与同一个数据使用一种独特的方式来交互
 ```
@@ -62,4 +63,145 @@ let s2 = s1;
 
 <img src="images/str-2.png" alt="String" width="300">
 
+当s1,s2离开作用域时，它们都会尝试释放同一块内存。这会导致一个双重释放的错误，这是非常危险的。
+double free bug！
+为了保证内存安全：
+- Rust 没有尝试复制被分配的内存
+- Rust 让s1失效。
+  - 当s1离开作用域时，rust不需要释放任何东西。
 
+这里会报错，因为s1已经失效了，rust不允许使用失效的变量。
+```
+let s1 = String::from("Hello");
+let s2 = s1;
+println!("{}, world!", s1);
+```
+Rust 让s1失效的操作叫做：移动(move)。
+Rust不会自动创建数据的深拷贝
+修复方法：
+```
+let s1 = String::from("Hello");
+let s2 = s1.clone();
+println!("{},{}", s1, s2);
+```
+对heap上的数据进行深度拷贝（消耗资源）
+
+### Stack上的数据：复制
+Copy trait, 可以用于像整数这样可以完全存放在stack上的类型。  
+如果一个类型实现了Copy这个trait, 那么旧的变量在赋值以后仍然可用。  
+如何一个类型或者该类型的一部分实现了Drop trait 那么Rust 就不允许实现Copy trait。
+
+### 一些拥有Copy trait的类型
+任何单标量的组合类型都可以是Copy的。  
+如果需要分配内存或者某种资源的都不是Copy的。
+* 一些拥有Copy trait 的类型：
+    * 所有的整数类型, eg: u32
+    * bool
+    * char
+    * 所有的浮点数类型, eg: f64
+    * Tuple (元组), 如果其元素类型都是Copy的，那么该元组也是Copy的。
+        * (i32, i32) 是。
+        * (i32, String) 不是。
+
+## 所有权和函数
+```
+fn main() {
+    let s = String::from("hello world");
+    take_ownership(s);
+    // 从这以后，s不再有效
+    
+    let x = 5;
+
+    make_copy(x); 
+
+    // 从这以后，x还可以继续使用。
+    println!("{}", x);
+
+}
+
+fn take_ownership(some_string: String){
+    println!("{}", some_string);
+}
+
+fn make_copy(some_integer: i32){
+    println!("{}", some_integer);
+}
+
+```
+
+## 返回值与作用域
+函数在返回值的过程中也会同样发生所有权的转移
+一个变量的所有权总是遵循相同的模式：
+* 将值赋给另一个变量时会发生移动
+* 当一个包含heap的数据的变量离开作用域时, 它的值会被drop函数清理,除非数据的所有权移动到另外一个变量上了
+
+**如何让函数使用某个值,但不获得其所有权？**
+
+## 引用与借用
+
+```
+fn main() {
+    let s1 = String::from("hello");
+    let len = calculate_length(&s1);
+    println!("The length of '{}' is {}.", s1, len);
+
+}
+
+fn calculate_length(s: &String) -> usize {
+    s.len()
+}
+
+```
+这里参数的类型是&String, 称为引用(reference)。  
+<img src="images/ref.png" alt="String" width="300">  
+这里s就是s1的引用。
+
+我们把引用作为函数参数叫做借用(borrowing)。
+和变量一样,引用默认是不可变的。  
+## 可变引用
+```
+fn main() {
+    let mut s1 = String::from("hello");
+    let len = calculate_length(&mut s1);
+    println!("The length of '{}' is {}.", s1, len);
+
+}
+
+fn calculate_length(s: &mut String) -> usize {
+    s.push_str(", world!");
+    s.len()
+}
+```
+可变引用有一个重要的限制：在特定作用域内,对于某一块数据,只能有**一个**可变的引用。
+这里就会报错
+```
+fn main() {
+    let mut s = String::from("hello");
+    let s1 = &mut s;
+    let s2 = &mut s;
+    println!("{}, {}", s1, s2);
+
+}
+```
+这样的好处是可以在编译的时候防止数据竞争  
+* 以下三种行为会发生数据竞争：
+    * 两个或多个指针同时访问同一个数据
+    * 至少有一个指针被用来写入数据
+    * 没有使用任何机制来同步对数据的访问
+* 可以通过创建新的作用域来允许非同时地创建多个可变引用
+```
+fn main() {
+    let mut s = String::from("hello");
+    {
+        let s1 = &mut s;
+    }
+
+    let s2 = &mut s;
+
+}
+```
+引用的规则：
+* 在任意给定的时刻，只能满足下列条件之一：
+    * 一个可变引用
+    * 任意数量不可变的引用
+* 引用必须一直有效
