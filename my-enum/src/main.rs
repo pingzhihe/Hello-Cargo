@@ -1,19 +1,14 @@
-enum ipAddKind {
-    V4,
-    V6,
-}
-struct IpAddr {
-    kind: ipAddKind,
-    address: String,
-}
 
 fn main() {
-    let four = ipAddKind::V4;
-    let six = ipAddKind::V6;
+    let v = Some(0u8);
+    match v{
+        Some(1) => println!("one"),
+        _ => (),
+    }
 
-    let home = IpAddr {
-        kind: ipAddKind::V4,
-        address: String::from("127.0.0.1"),
-    };
-    
+    if let Some(1) = v {
+        println!("one");
+    }
 }
+
+
