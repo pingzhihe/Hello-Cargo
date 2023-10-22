@@ -113,4 +113,55 @@ let s1 = "initial contents".to_string(); // same as above
 ```
 let s = String::from("hello");
 ```
+## 更新字符串
+* 使用`push_str()`方法, 将字符串切片附加到String
+```
+let mut s = String::from("foo");
+s.push_str("bar");
+println!("{}", s);
+```
+* 使用`push()`方法, 将单个字符附加到String
+```
+    let mut s = String::from("hello");
+    s.push(';'); // push a char
+    println!("{}", s);
+```
+* 使用`+`运算符或拼接字符串
+    * 使用了类似这个签名的方法:`fn add(self, s: &str) -> String{...}`
+    * `+`运算符会取得其第一个参数的所有权, 并且使第一个字符串不可用
+    * 标准库中的`add`使用了泛型
+    * 只能把`&str`拼接到String上
+    * 解引用强制转换`&String`为`&str`
+```
+let s1 = String::from("hello");
+let s2 = String::from("world");
+let s3 = s1 + &s2; // note s1 has been moved here and can no longer be used
+println!("s3 = {}", s3);
+println!("s2 = {}", s2);
+// println!("s1 = {}", s1); // error: value borrowed here after move
+```
+```
+let s1 = String::from("tic");
+let s2 = String::from("tac");
+let s3 = String::from("toe");
+let s3 = s1 + "-" + &s2 + "-" + &s3;
+println!("{}", s3);
+```
+输出`tic-tac-toe`
+* 使用`format!`宏拼接字符串
+```
+let s1 = String::from("tic");
+let s2 = String::from("tac");
+let s3 = String::from("toe");
+
+
+let s = format!("{}-{}-{}", s1, s2, s3);
+println!("{}", s);
+```
+同样输出`tic-tac-toe`
+这个方法不会获得原来`s1`, `s2`, `s3`的所有权,这三个依旧可以使用
+
+## 索引字符串
+
+
 
