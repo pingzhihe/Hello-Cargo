@@ -309,3 +309,26 @@ println!("{:?}", scores);
 输出`{"Blue": 10, "Yellow": 50}`
 
 ### 基于现有V来更新V
+```
+let text =  "hello world wonderful world";
+
+let mut map = HashMap::new();
+
+for word in text.split_whitespace() {
+    // or_insert 方法事实上会返回这个键的值的一个可变引用（&mut V）
+    // 这里我们将这个可变引用储存在 count 变量中
+    let count = map.entry(word).or_insert(0); //返回的是一个可变引用
+    *count += 1;
+}
+
+println!("{:?}", map);
+```
+输出`{"world": 2, "hello": 1, "wonderful": 1}`
+
+### Hash 函数
+* 默认情况下， HashMap使用加密强大的Hash函数， 可以抵抗拒绝服务攻击(DoS)
+    * 不是可用的最快的Hash算法
+    * 但具有良好的安全性
+* 可以指定不同的hasher来切换到不同的Hash算法
+    * hasher 是一个实现了BuildHasher trait的类型
+    * 例如: FnvBuilder
