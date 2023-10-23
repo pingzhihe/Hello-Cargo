@@ -162,6 +162,150 @@ println!("{}", s);
 这个方法不会获得原来`s1`, `s2`, `s3`的所有权,这三个依旧可以使用
 
 ## 索引字符串
+* Rust 不允许使用索引获取String中的字符
+```
+let s1 = String::from("hello");
+let h = s1[0]; // Error: the type `std::string::String` cannot be indexed by `{integer}`
+```
 
 
+* String 是对Vec<u8>的封装
 
+### 字节、标量值和字形簇
+* Rust 有三种看待字符串的形式:
+    * 字节
+    * 标量值
+    * 字形簇 (最接近人类理解的字符概念)
+
+### 切割String
+* 可以使用[] 和一个范围来创建一个字符串切片
+    * 必须谨慎使用
+    * 如果切割时跨越了字符边界, 会panic
+
+# HashMap
+* 键值对的形式储存数据，一个键(Key)对应一个值(Value)
+* Hash 函数: 决定了键和值如何储存到内存中
+* 适用场景: 通过K(任何类型)来寻找数据，而不是通过索引
+
+## 创建一个HashMap
+```
+    let mut scores= HashMap::new();
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Yellow"), 50);
+```
+* HashMap 数据储存在heap上
+* 所有的key必须是相同类型，所有的value也必须是相同类型
+## 另外一种创建HashMap的方法
+* 在元素类型为Tuple的Vector上使用collect方法, 可以组建一个HashMap：
+    * 要求Tuple 有两个值: 一个作为key, 一个作为value
+    * collect 方法可以将数据收集到不同的数据结构中
+        * 返回值需要显式声明类型
+    
+```
+let teams = vec![String::from("Blue"), String::from("Yellow")];
+let initial_scores = vec![10, 50];
+let scores: HashMap<_, _> = 
+    teams.iter().zip(initial_scores.iter()).collect();
+```
+
+## HashMap 和所有权
+* 对于实现了Copy trait的类型，其值会被复制到HashMap中
+* 对于拥有所有权在的值(例如String)，值会被移动，所有权会转移给HashMap
+```
+let field_name = String::from("Favorite color");
+let field_value = String::from("Blue");
+
+let mut map = HashMap::new();
+map.insert(field_name, field_value);
+
+//println!("{}:{}", field_name, field_value);// error!  ownership moved to map   
+```
+
+* 如果将值的引用插入HashMap，值本身不会被移动到HashMap中
+```
+let field_name = String::from("Favorite color");
+let field_value = String::from("Blue");
+
+let mut map = HashMap::new();
+map.insert(&field_name, &field_value);
+
+println!("{}:{}", field_name, field_value);
+```
+* 在HashMap有效时，其引用的key和value值也必须有效
+
+## 访问HashMap中的值
+* 使用get方法，传入key，返回一个Option<&V>
+```
+let mut scores = HashMap::new();
+
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Yellow"), 50);
+
+let team_name = String::from("Blue");
+let score = scores.get(&team_name); // returns Option<&V>
+
+match score{
+    Some(s) => println!("{}: {}", team_name, s),
+    None => println!("{}: {}", team_name, "No score"),
+};
+```
+* 遍历HashMap
+```
+let mut scores = HashMap::new();
+
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Yellow"), 50);
+
+
+for (key, value) in &scores {
+    println!("{}: {}", key, value);
+}
+```
+## 更新HashMap
+* HashMap 大小可变
+* 每个K只能对应一个V
+* 更新HashMap 中的数据:
+    * K 已存在, 对应一个V：
+        * 替换现有的V
+        * 保留现有的V, 忽略新的V
+        * 合并现有的V和新的V
+    * K 不存在, 插入新的K和V
+
+### 替换现有的V
+* 如果向HashMap插入一对KV, 然后再插入同样的K, 但是不同的V, 那么原来的V会被替换
+```
+let mut scores = HashMap::new();
+
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Blue"), 50);
+
+println!("{:?}", scores);
+
+```
+输出`{"Blue": 50}`
+### 只在K没有对应任何值的情况下V时插入
+* entry方法: 检查指定的K是否有对应的V
+    * 参数为K
+    * 返回enum Entry: 代表值是否存在
+* Entry的or_insert()方法:
+    * 返回：
+        * 如果K存在, 返回对应的V的可变引用
+        * 如果K不存在, 插入参数作为新的V, 返回新的V的可变引用
+        
+```
+let mut scores = HashMap::new();
+
+scores.insert(String::from("Blue"), 10);
+
+// scores.entry(String::from("Yellow")).or_insert(50);
+let e= scores.entry(String::from("Yellow"));
+println!("{:?}", e);
+e.or_insert(50);
+scores.entry(String::from("Blue")).or_insert(50); //不会覆盖原有的值
+
+println!("{:?}", scores);
+
+```
+输出`{"Blue": 10, "Yellow": 50}`
+
+### 基于现有V来更新V
