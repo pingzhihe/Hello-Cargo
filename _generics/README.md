@@ -93,4 +93,84 @@ impl<T> Point<T> {
 
 # Trait
 * Trait 告诉Rust 编译器:
-    * 某些类型具有哪些并且可以
+    * 某些类型具有哪些并且可以与其它类型共享的功能
+* 可以通过 trait 以一种抽象的方式定义共享的行为
+* Trait bounds(约束): 泛型类型参数指定为是实现了特定行为的类型
+
+## 定义一个Trait
+* Trait 的定义: 把方法签名放在一起, 来定义实现某种目的的所必需的一组行为
+    * 关键词: trait
+    * 只有方法签名, 没有具体实现
+    * trait 可以有多个方法: 每个方法签名占一行,以; 结尾
+    * 实现该trait的类型必须提供具体的方法实现
+```
+pub trait Summary {
+    fn summarize(&self) -> String;
+}
+```
+## 在类型上实现trait
+* 与为类型实现方法类似
+* syntax： `impl Trait for Type {}`
+* 在impl 的块内, 需要对trait方法签名提供具体的实现  
+
+lib.rs:
+```
+pub trait Summary {
+    fn summarize(&self) -> String;
+}
+
+pub struct NewsArticle {
+    pub headline: String,
+    pub location: String,
+    pub author: String,
+    pub content: String,
+}
+impl Summary for NewsArticle {
+    fn summarize(&self) -> String {
+        format!("{}, by {} ({})", self.headline,self.author,self.location)
+    }
+}
+
+pub struct Tweet {
+    pub username: String,
+    pub content: String,
+    pub reply: bool,
+    pub retweet:bool,
+}
+
+impl Summary for Tweet {
+    fn summarize(&self) -> String {
+        format!("{}: {}", self.username, self.content)
+    }
+}
+```
+main.rs:
+```
+use _generics::Summary;
+use _generics::Tweet;
+
+fn main() {
+    let tweet = Tweet {
+        username: String::from("horse_ebooks"),
+        content: String::from("of course, as you probably already know, people"),
+        reply:false,
+        retweet:false,
+    };
+    println!("1 new tweet: {}", tweet.summarize());
+} 
+```
+会输出: `1 new tweet: horse_ebooks: of course, as you probably already know, people`
+
+## 实现Trait的约束
+* 可以在某个类型上实现某个trait的前提条件是:
+    * 这个类型或这个trait是在本地的crate里定义的
+* 无法为外部类型来实现外部的trait
+    * 例如: 无法为`Vec<T>`实现`Display trait`
+        * 因为`Vec<T>`和`Display trait`都是在标准库中定义的
+    * 这个限制是程序属性的一部分(也就是一致性)
+    * 具体说是孤儿规则(orphan rule): 之所以这样命名是因为父类型不存在
+    * 此规则确保其他人的代码不会破坏你的代码, 反之亦然
+    * 如果没有这个规则, 两个crate可以分别对相同类型实现相同的trait, 且Rust不知道该使用哪个实现
+
+## 默认实现
+
