@@ -173,4 +173,117 @@ fn main() {
     * 如果没有这个规则, 两个crate可以分别对相同类型实现相同的trait, 且Rust不知道该使用哪个实现
 
 ## 默认实现
+默认实现的方法可以调用同一个trait中的其他方法
+
+
+## trait作为参数
+* 语法: `impl Trait`
+```
+pub fn notify(item: impl Summary) {
+    println!("Breaking news! {}", item.summarize());
+}
+```
+* Trait bound 语法: `Trait + Trait` 课用于更复杂的情况
+```
+pub fn notify<T: Summary>(item: &T) {
+    println!("Breaking news! {}", item.summarize());
+}
+```
+* 语法糖: `impl Trait` 等价于 `impl<T> Trait for T {}`
+* 使用+指定多个trait bound
+* trait bound 使用where子句
+    * 在方法签名后指定where子句
+```
+pub fn notify<T: Summary + Display, U: Clone + Debug>(a: T, b: U)-> String {
+    format!("Breaking news! {}", a.summarize())
+}
+```
+等用于:
+```
+pub fn notify2<T, U>(a: T, b: U)-> String 
+where T: Summary + Display,
+        U: Clone + Debug,
+{
+    format!("Breaking news! {}", a.summarize())
+
+}
+```
+## 实现Trait作为返回类型
+* 语法: `-> impl Trait`
+```
+pub fn notify3(s: &str) -> impl Summary{
+    NewsArticle{
+        headline: String::from("Rust is the best language"),
+        content: String::from(format!("{}", s)),
+        author: String::from("The Rust Team"),
+        location: String::from("Everywhere"),
+    }
+}
+```
+* 限制: 一个函数只能返回一个具体类型
+    * 不能返回`NewsArticle`和`Tweet`
+
+## 使用trait bound 的例子
+修复以下代码：
+```
+fn largest<T>(list: &[T]) -> T{
+    let mut largest = list[0];
+    for &item in list.iter(){
+        if item > largest {
+            largest = item;
+        }
+    }
+    largest
+}
+
+fn main() {
+    let number_list = vec![34, 50, 25, 100, 65];
+    let result = largest(&number_list);
+    println!("The largest number is {}", result);
+}
+```
+* 问题: 无法编译
+    * 因为`>`不能用于所有类型
+* 解决: 使用trait bound
+    * T必须实现`PartialOrd` trait
+    * T必须实现`Copy` trait
+```
+fn largest<T>(list: &[T]) -> T
+where T: PartialOrd + Copy
+{
+    let mut largest = list[0];
+    for &item in list.iter(){
+        if item > largest { // std::cmp::PartialOrd
+            largest = item;
+        }
+    }
+    largest
+}
+```
+## 使用trait bound 有条件的实现方法
+* 在使用泛型类型参数的impl块上使用trait bound, 我们可以有条件的只为那些实现了特定trait的类型实现方法
+```
+struct Pair<T> {
+    x: T,
+    y: T,
+}
+
+impl <T> Pair<T> {
+    fn new(x: T, y: T) -> Self {
+        Self {x, y}
+    }
+}
+
+impl <T: Display + PartialOrd> Pair<T> {
+    fn cmp_display(&self) {
+        if self.x >= self.y {
+            println!("The largest member is x = {}", self.x)
+        } else {
+            println!("The largest member is y = {}", self.y)
+        }
+    }
+}
+```
+
+
 
