@@ -11,4 +11,5 @@ https://kaisery.github.io/trpl-zh-cn/title-page.html
 [5.package-create-moudle](https://github.com/pingzhihe/Hello-Cargo/tree/master/package-create-module) keep updating...  
 [6.vector](https://github.com/pingzhihe/Hello-Cargo/tree/master/_vector)  
 [7.error-handle](https://github.com/pingzhihe/Hello-Cargo/tree/master/error-handle) keep updating...  
-[8.generics](https://github.com/pingzhihe/Hello-Cargo/tree/master/_generics)  
+[8.generics](https://github.com/pingzhihe/Hello-Cargo/tree/master/_generics)  泛型  
+[9.life-time](https://github.com/pingzhihe/Hello-Cargo/tree/master/_life-time) keep updating... Rust 的生命周期
