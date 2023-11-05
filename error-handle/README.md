@@ -125,4 +125,50 @@ let f = File ::open("hello.txt").expect("Failed to open hello.txt");
 
 ## 传播错误
 * 在函数中传播错误
+* 将错误返回给调用者
 ```
+use std::fs::File;
+use std::io;
+use std::io::Read;
+
+
+fn read_username_from_file() -> Result<String, io::Error> {
+    let f = File::open("hello.txt");
+
+    let mut f = match f {
+        Ok(file) => file,
+        Err(e) => return Err(e),
+    };
+
+    let mut s= String::new();
+
+    match f.read_to_string(&mut s) {
+        Ok(_) => Ok(s),
+        Err(e) => Err(e),
+    }
+}
+
+fn main() {
+    let result = read_username_from_file();
+    println!("{:?}", result);
+
+}
+```
+
+## ? 运算符
+* ? 运算符: 传播错误的一种快捷方式
+```
+fn read_username_from_file() -> Result<String, io::Error> {
+    let mut f = File::open("hello.txt")?;
+    let mut s= String::new();
+
+    f.read_to_string(&mut s)?;
+    Ok(s)
+
+}
+```
+这里的`fn read_username_from_file()`实现了和上文一样的功能，但是更简洁 (好甜的语法糖orz)
+* 如果Result是OK: OK中的值就是表达式的结果, 然后继续执行程序
+* 如果Result是Err: Err中的值将作为整个函数的返回值, 就好像使用了return 关键字一样
+
+## ? 与from函数

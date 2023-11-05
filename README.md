@@ -1,7 +1,8 @@
 # Hello-Cargo
-参考：
-https://doc.rust-lang.org/stable/book/
-https://kaisery.github.io/trpl-zh-cn/title-page.html
+* 参考：  
+https://doc.rust-lang.org/stable/book/  
+https://kaisery.github.io/trpl-zh-cn/title-page.html (中文版)
+
 本项目用于学习rust基本语法以及特性，感谢rust中文社区的翻译
 ## 学习流程：
 [1.num-type](https://github.com/pingzhihe/Hello-Cargo/tree/master/num-type)  
