@@ -149,6 +149,7 @@ fn main() {
 
 ```
 
+
 ## 生命周期的省略
 * 我们知道:
     * 每一个引用都有其生命周期
@@ -159,6 +160,11 @@ fn main() {
     * 如果应用规则后, 引用的生命周期仍然模糊不清 -> 编译器报错
     * 解决办法: 显式标注生命周期
 
+## 输入输出生命周期
+* 生命周期在:
+    * 函数/方法的参数: 输入生命周期
+    * 函数/方法的返回值: 输出生命周期
+
 ### 生命周期省略的三个规则
 * 编译器使用三个规则在没有显式标注生命周期的情况下， 来确定引用的生命周期：
     * 第一条规则适用于输入生命周期，后两条规则适用于输出生命周期。
@@ -166,7 +172,98 @@ fn main() {
     * 这些规则适用于 fn 定义，以及 impl 块。
 
 * 规则1: 每一个是引用的参数都有它自己的生命周期参数
-* 规则2: 如果只有一个输入生命周期参数，那么它被赋予所有输出生命周期参数
+* 规则2: 如果只有一个输入生命周期参数，那么该生命周期参数被赋予所有输出生命周期参数
 * 规则3: 如果方法有多个输入生命周期参数并且其中一个参数是 &self 或 &mut self，说明是个对象的方法(method), 那么所有输出生命周期参数被赋予 self 的生命周期
 
+## 生命周期省略的三个规则-例子
+* 假设我们是编译器
+* `fn first_word(s: &str) -> &str {`
+* `fn first_word<'a>(s: &'a str) -> &str {`
+* `fn first_word<'a>(s: &'a str) -> &'a str {`  
+这里编译器可以成功推断出生命周期,因为只有一个输入生命周期参数,所以规则2适用,输出生命周期参数被赋予输入生命周期参数
+
+
+* `fn longest(x: &str, y: &str) -> &str {`
+* `fn longest<'a,'b>(x: &'a str, y: &'b str) -> &str {`   
+两个参数都有自己的生命周期,第二条规则不适用,没有`&self`参数,第三条规则不适用。无法计算出返回值的生命周期, 编译器报错。
+
+
 ## 方法定义中的生命周期标注
+* 在struct 上使用生命周期实现方法,语法和泛型参数的语法一样
+* 在哪声明和使用生命周期参数, 依赖于:
+    * 生命周期参数是否和字段,方法的参数或返回值有关
+
+* struct 字段的生命周期名:
+    * 在`impl`后声明
+    * 在`struct`名后使用
+    * 这些生命周期是struct类型的一部分
+
+* `impl` 块内的方法签名中：
+    * 引用必须绑定于struct字段引用的生命周期, 或者引用是独立的也可以
+    * 生命周期省略规则经常使得方法中的生命周期标注不是必须的
+
+```
+struct ImportantExcerpt<'a> {
+    part: &'a str,
+}
+
+impl <'a> ImportantExcerpt<'a> {
+    fn level(&self) -> i32 {
+        3
+    }
+    //  根据第三个规则, 这里的返回值的生命周期被赋予了self的生命周期
+    // announcement 和返回值的生命周期都可以省略
+    fn announce_and_return_part(&self, announcement: &str) -> &str {
+        println!("Attention please: {}", announcement);
+        self.part
+    }
+}
+
+fn main() {
+    let novel = String::from("Call me Ishmael. Some years ago...");
+    let first_sentence = novel.split('.')
+        .next()
+        .expect("Could not find a '.'");
+
+    let i = ImportantExcerpt {
+         part: first_sentence 
+        };
+    println!("{}", i.part);
+
+}
+
+```
+
+## 静态生命周期
+* `'static` 是一个特殊的生命周期, 代表整个程序的运行时间
+* 所有的字符串字面值都拥有 ` 'static` 生命周期
+    * `let s: &'static str = "I have a static lifetime.";`
+
+* 为引用指定`'static` 生命周期前要三思:
+    * 是否需要引用在程序整个生命周期内都存活。
+
+
+## 泛型类型参数, trait bound 和生命周期
+```
+use std::fmt::Display;
+
+fn longest_with_an_announcement<'a, T>(
+    x: &'a str, y: &'a str, ann: T,) -> &'a str
+    where T: Display
+{
+    println!("Announcement! {}", ann);
+    if x.len() > y.len() {
+        x
+    } else {
+        y
+    }
+}
+
+fn main() {
+    let string1 = String::from("abcd");
+    let string2 = String::from("xyz");
+    let result = longest_with_an_announcement(
+        string1.as_str(), string2.as_str(), "Today is someone's birthday!");
+    println!("The longest string is {}", result);
+}
+```

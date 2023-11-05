@@ -8,8 +8,9 @@ https://kaisery.github.io/trpl-zh-cn/title-page.html
 [2.ownership](https://github.com/pingzhihe/Hello-Cargo/tree/master/ownership)  
 [3.struct](https://github.com/pingzhihe/Hello-Cargo/tree/master/my-struct)  
 [4.enum](https://github.com/pingzhihe/Hello-Cargo/tree/master/my-enum)  
-[5.package-create-moudle](https://github.com/pingzhihe/Hello-Cargo/tree/master/package-create-module) keep updating...  
+[5.package-create-moudle](https://github.com/pingzhihe/Hello-Cargo/tree/master/package-create-module)  `keep updating...`  
 [6.vector](https://github.com/pingzhihe/Hello-Cargo/tree/master/_vector)  
-[7.error-handle](https://github.com/pingzhihe/Hello-Cargo/tree/master/error-handle) keep updating...  
+[7.error-handle](https://github.com/pingzhihe/Hello-Cargo/tree/master/error-handle) 错误处理  `keep updating...`  
 [8.generics](https://github.com/pingzhihe/Hello-Cargo/tree/master/_generics)  泛型  
-[9.life-time](https://github.com/pingzhihe/Hello-Cargo/tree/master/_life-time) keep updating... Rust 的生命周期
+[9.life-time](https://github.com/pingzhihe/Hello-Cargo/tree/master/_life-time) Rust 的生命周期
+[10.closure](https://github.com/pingzhihe/Hello-Cargo/tree/master/closure) 闭包  `keep updating...`  
