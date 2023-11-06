@@ -172,3 +172,73 @@ fn read_username_from_file() -> Result<String, io::Error> {
 * 如果Result是Err: Err中的值将作为整个函数的返回值, 就好像使用了return 关键字一样
 
 ## ? 与from函数
+* `Trait std::convert::From`:
+    * 用于错误之间的类型转换  
+
+* 被? 所引用的错误, 会隐式地被from 函数处理
+
+* 当? 调用from 函数时
+    * 它所接受的错误类型会被转化为当前函数返回类型所定义的错误类型
+
+* 用于: 针对不同错误类型, 返回同一种错误类型
+    * 只要每个错误类型实现了转换为返回类型所定义的错误类型的from 函数
+
+## ?运算符的链式调用
+```
+fn read_username_from_file() -> Result<String, io::Error> {
+    let mut s= String::new();
+    File::open("hello.txt")?.read_to_string(&mut s)?;
+    Ok(s)
+}
+```
+这三行的效果和上文一样, 但是更简洁
+
+## ? 运算符只能用于返回Result的函数
+```
+use std::fs::File;
+use std::error::Error;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let f = File::open("hello.txt")?;
+    Ok(())
+}
+
+```
+这样就可以在main 函数中使用? 运算符了  
+* `Box<dyn Error>` 意味着函数会返回实现了Error trait 的类型, 但是不需要指定具体将会返回的值的类型
+    * 简单理解: 任何可能的错误类型
+
+## 什么时候该用 panic!
+* 在定义一个可能失败的函数的时候, 优先考虑返回Result
+* 否则就是panic!
+
+## 编写实例, 原型代码, 测试
+* 可以使用panic!
+    * 演示某些概念: unwrap
+    * 原型代码: unwrap, expect (我们还不知道后续该怎么处理错误)
+    * 测试: unwrap, expect 
+
+## 有时你比编译器掌握更多信息
+* 你可以知道Result 就是OK: unwrap
+```
+use std::net::IpAddr;
+fn main(){
+    let home: IpAddr = "170.0.0.1".parse().unwrap();
+}
+```
+
+## 错误处理的指导性建议
+* 当代码最终可能处于损坏状态的时候, 最好使用panic！
+* 损坏状态(Bad state): 某些假设, 保证, 约定或不可变性被打破
+    * 例如非法的值, 矛盾的值或者空缺的值被传入代码
+    * 以及下列的一条: 
+        * 这种损坏并不是预期能够偶尔发生的事情。
+        * 在此之后,你的代码中没有一个好的方法来将这些信息(处于损坏状态)进行编码。
+
+## 场景建议
+* 调用你的代码, 传入无意义的值: panic!
+* 调用外部不可控代码, 返回非法状态, 你无法修复: panic!
+* 如果失败是可预期的: Result
+* 当你的代码对值进行操作, 首先应该验证这些值: panic!
+
+
