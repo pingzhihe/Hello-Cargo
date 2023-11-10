@@ -2,7 +2,7 @@
 * 参考：  
 https://doc.rust-lang.org/stable/book/  
 https://kaisery.github.io/trpl-zh-cn/title-page.html (中文版)
-* 推荐视频教程:
+* 推荐视频教程:  
 https://www.bilibili.com/video/BV1hp4y1k7SV/?spm_id_from=333.999.0.0&vd_source=cf07ed4529817e217e8016248406dede
 
 本项目用于学习rust基本语法以及特性，感谢rust中文社区的翻译
