@@ -85,3 +85,28 @@ mod front_of_house {
 * 路径至少由一个标识符组成,标识符之间使用`::`
 * 例如: `crate::front_of_house::hosting::add_to_waitlist`
 
+### 私有边界(private boundary)
+* 模块不仅可以组织代码, 还可以定义私有边界
+* 如果把函数或者struct 等设为私有,可以将它放到某个模块中, 这样其他模块就不能访问它了
+* Rust 中所有的条目(函数,方法,struct,enum,module) 默认都是私有的
+* 父级模块不能访问子模块的私有条目
+* 子模块可以访问父模块的私有条目
+* 使用`pub`关键字可以使条目变为公有
+```
+mod front_of_house {
+
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+pub fn eat_at_restaurant() {
+    // Absolute path
+    crate::front_of_house::hosting::add_to_waitlist();
+
+    // Relative path
+    front_of_house::hosting::add_to_waitlist();
+}
+```
+
+### super 关键字:
