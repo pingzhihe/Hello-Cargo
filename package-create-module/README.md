@@ -245,8 +245,8 @@ mod front_of_house {
     }
 }
 ```
-这边如果是`mod front_of_house;` 会从front_of_house.rs 文件中加载模块内容
-`lib.rs`:
+这边如果是`mod front_of_house;` 会从front_of_house.rs 文件中加载模块内容  
+`lib.rs`:  
 ```
 mod front_of_house;
 pub use crate:: front_of_house::hosting;
