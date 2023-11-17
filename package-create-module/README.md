@@ -110,3 +110,162 @@ pub fn eat_at_restaurant() {
 ```
 
 ### super 关键字:
+* super: 用来访问父级模块路径中的内容, 类似文件系统中的`..`
+```
+fn serve_order() {}
+
+mod back_of_house {
+    fn fix_incorrect_order() {
+        cook_order();
+        super::serve_order();
+    }
+
+    fn cook_order() {}
+}
+```
+### pub struct
+* pub struct: 使结构体公有
+    * struct 是公共的
+    * struct 内字段是默认私有的
+
+* struct 的字段需要单独设置pub 来变成公有
+
+### pub enum
+* pub enum:
+    * enum 是公共的
+    * enum 的变体也都是公共的
+
+## use 关键字
+* 可以使用use 关键字将路径引入作用域内
+    * 仍遵循私有性规则
+```
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+use crate::front_of_house::hosting;
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+    hosting::add_to_waitlist();
+    hosting::add_to_waitlist();
+}
+
+```
+* use 也可以使用相对路径
+```
+use front_of_house::hosting;
+```
+我们一般引入的是函数的父级模块, 这样就可以知道调用的函数是属于哪个模块的
+
+* struct, enum, 其他:  指定完整路径(指定到本身)
+```
+use std::collections::HashMap;
+fn main() {
+    let mut map = HashMap::new();
+    map.insert(1, 2);
+
+}
+```
+同名的struct或者enum, 指定到父级
+```
+use std::fmt;
+use std::io;
+
+fn f1() -> fmt::Result {}
+fn f2() -> io::Result {}
+
+fn main {}
+```
+### as 关键字
+* as 关键字可以为引入的路径设置本地的别名
+```
+use std::fmt::Result;
+use std::io::Result as IoResult;
+
+fn f1() -> Result {}
+fn f2() -> IoResult {}
+
+fn main {}
+```
+
+### 使用pub use 重新导出名称
+* 使用use 将路径(名称)导入作用域后, 该名称在次作用域是私有的
+```
+pub use front_of_house::hosting;
+```
+在外部使用hosting function  
+* pub use: 重导出
+    * 将条目引入作用域
+    * 该条目可以被外部代码引入到它们的作用域
+
+### 使用外部包
+1. 在Cargo.toml 中添加依赖的包(package)
+    * https://crates.io/ 上查找包
+2. use 将特定条目引入作用域
+    * 例如: use rand::Rng
+
+* 标准库std 也被当作一个外部包
+    * 不需要修改Cargo.toml来使用它
+    * 只需要use 将特定条目引入作用域
+
+### 使用嵌套路径消除大量的use
+* 如果要使用一个包或者模块中的多个条目
+*  可以使用嵌套路径在同一行内将上述条目引入:
+    * 路径相同的部分::{路径不同的部分}
+
+```
+use std::{cmp::Ordering, io};
+```
+* 也可以使用self, super
+```
+use std::io::{self, Write};
+```
+
+### 通配符*
+* 使用*可以把路径中所有的公共条目引入作用域
+* 注意: 谨慎使用
+* 应用场景:
+    * 测试: 把所有被测试的代码引入到tests模块
+    * 有时候被用于预导入(prelude)模块
+
+## 将模块拆分为不同的文件
+
+### 将模块内容移动到其他文件
+* 模块定义时, 如果模块名后边是`;`, 而不是代码块:
+    * Rust 会从与模块同名的文件中加载模块内容
+    * 模块树的结构不会发生变化
+    * 例如: `mod front_of_house;`
+* 随着模块逐渐增大, 可以将模块内容移动到其他文件中
+```
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+```
+这边如果是`mod front_of_house;` 会从front_of_house.rs 文件中加载模块内容
+`lib.rs`:
+```
+mod front_of_house;
+pub use crate:: front_of_house::hosting;
+
+pub fn eat_at_restaurant() {
+    hosting :: add_to_waitlist();
+    hosting :: add_to_waitlist();
+    hosting :: add_to_waitlist();
+}
+```
+`front_of_house.rs`:
+```
+pub mod hosting {
+    pub fn add_to_waitlist() {}
+}
+```
+
+
+
+
+
+
