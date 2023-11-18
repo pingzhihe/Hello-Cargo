@@ -20,10 +20,13 @@ impl Guess {
 }
 #[cfg(test)]
 mod tests{
-    use super::*;
     #[test]
-    #[should_panic(expected = "Guess value must be less than or equal to 100")]
-    fn greater_than_100(){
-        Guess::new(0);
+    fn if_works() -> Result<(), String>{
+        if 2+3 == 4{
+            Ok(())
+        } else{
+            Err(String::from("two plus two does not equal to four")
+            )    
+        }
     }
 }

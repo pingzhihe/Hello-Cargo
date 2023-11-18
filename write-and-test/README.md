@@ -176,7 +176,72 @@ mod tests{
 }
 ```
 ## 使用Result`<T, E>` 的测试
+### 在测试的时候使用Result`<T, E>`
+* 无需panic, 可以使用Result`<T, E>` 作为返回类型编写测试
+    * 返回Ok: 测试通过
+    * 返回Err: 测试失败
+```
 
 
 
+pub struct Guess {
+    value: i32,
+}
+
+impl Guess {
+    pub fn new(value: i32) -> Guess {
+        if value < 1 {
+            panic!("Guess value must be great or equal to 1 got {}.",
+            value
+            )
+        } else if value > 100 {
+            panic!("Guess value must be less than or equal to 100 got {}.",
+            value
+            )
+        }
+        Guess {value}
+    }
+}
+#[cfg(test)]
+mod tests{
+    #[test]
+    fn if_works() -> Result<(), String>{
+        if 2+3 == 4{
+            Ok(())
+        } else{
+            Err(String::from("two plus two does not equal to four")
+            )    
+        }
+    }
+}
+```
+* 注意: 不要使用`Result<T,E>`编写的测试上标注#[should_panic]
+
+## 控制测试运行
+### 控制测试如何运行
+* 改变`cargo test` 命令的行为
+    * 并行运行
+    * 所有测试
+    * 捕获(不显示)所有输出, 使读取与测试相关结果的输出更容易
+* 命令行参数:
+    * 针对cargo test 的参数: 紧跟在`cargo test` 后面
+    * 针对测试可执行程序的参数: 紧跟在`--` 后面
+* `cargo test --help` 查看所有参数
+* `cargo test -- --help` 查看测试可用在`--`之后的参数
+
+### 并行运行测试
+* 运行多个测试: 默认使用多个线程并行运行
+    * 运行快
+* 确保测试之间: 
+    * 不会互相依赖
+    * 不依赖于某个共享状态(如环境变量, 文件系统, 数据库)
+
+### --test-threads 参数
+* 传递给二进制文件
+* 不想以并行方式运行测试, 或者想对线程数进行颗粒度控制
+* 可以使用`--test-threads` 参数, 后面跟线程数量
+    * `cargo test -- --test-threads=1` 一次只运行一个测试
+    * `cargo test -- --test-threads=8` 一次运行8个测试
+
+### 显示函数输出
 
