@@ -244,4 +244,155 @@ mod tests{
     * `cargo test -- --test-threads=8` 一次运行8个测试
 
 ### 显示函数输出
+* 默认, 如测试通过, Rust的test 库会捕获所有打印到标准输出的内容
+* 例如, 如果被测试代码中用到了println!: 
+    * 如果测试通过: 不会在终端看到println! 打印的内容
+    * 如果测试失败: 会在终端看到println! 打印的内容和失败信息
+```
+fn prints_and_return_10(a: i32) -> i32{
+    
+    println!("I got the value {}",a);
+    10
+}
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+    #[test]
+    fn this_test_will_pass(){
+        let value = prints_and_return_10(4);
+        assert_eq!(10, value);
+    }
+    #[test]
+    fn this_test_will_fall(){
+        let value = prints_and_return_10(8);
+        assert_eq!(5, value);
+    }
+}
+```
+## 按名称运行测试的子集
+* 选择运行的测试: 将测试的名称(一个或多个)作为cargo test 的参数
+
+```
+fn add_two(a: i32) -> i32{
+    a + 2
+}
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+    #[test]
+    fn add_two_and_two(){
+        assert_eq!(4, add_two(2));
+    }
+    #[test]
+    fn add_three_and_two(){
+        assert_eq!(5, add_two(3));
+    }
+    #[test]
+    fn one_hundred(){
+        assert_eq!(102, add_two(100));
+    }
+}
+```
+* 运行单个测试: `cargo test one_hundred`  
+
+* 运行多个测试: 指定测试名的一部分(模块名也可以)
+    * `cargo test two` 会运行两个测试: add_two_and_two, add_three_and_two
+
+## 忽略测试
+
+* ignore 属性(attribute)
+`#[ignore]`
+* 运行被忽略的测试: `cargo test -- --ignored`
+
+
+## 测试的组织
+### 测试的分类
+* Rust 对测试的分类:
+    * 单元测试(unit tests)
+    * 集成测试(integration tests)
+
+* 单元测试:
+    * 小, 专注
+    * 一次对一个模块进行隔离的测试
+    * 可测试private 接口
+
+* 集成测试:
+    * 在库外部. 和其他外部代码一起使用
+    * 只能访问public 接口
+
+### 单元测试
+#### `#[cfg(test)]`标注
+* tests 模块上的`#[cfg(test)]` 标注
+    * 只有在运行`cargo test` 时才编译和运行代码
+    * `cargo build` 则不会
+* 集成测试在不同的目录,  它不需要`#[cfg(test)]` 标注
+* cfg: configuration(配置)
+    * 告诉Rust 下面的条目只有在指定的配置选项下才被包含
+    * 配置选项test: 有rust 提供, 用来编译和运行测试
+        * 只有cargo test 才会编译代码, 包括某块中的helper函数和`#[test]` 标注的函数
+
+#### 测试私有函数
+* Rust 运行测试私有函数
+```
+pub fn add_two(a:i32)->i32{
+    a+2
+}
+fn internal_adder(a:i32,b:i32)->i32{
+    a+b
+}
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+    #[test]
+    fn internal(){
+        assert_eq!(4,internal_adder(2,2));
+    }
+
+
+}
+```
+这里用`use super::*;`导入父模块的所有内容,internal 测试函数可以调用internal_adder这个私有函数  
+
+### 集成测试
+* 在Rust里, 集成测试完全位于被测试库的外部
+* 目的: 是测试被测试库的多个部分是否可以一起正常工作
+* 集成测试的覆盖率很重要
+
+#### test 目录
+* 创建集成测试: tests 目录
+* tests 目录下的每个测试文件都是单独一个crate
+    * 需要将被测试库导入
+
+* 无需`#[cfg(test)]` 标注, tests 目录被特殊对待
+    * 只有运行`cargo test` 时才会编译和运行tests 目录下的代码
+    
+在tests 目录下创建一个文件, 例如`tests/integration_test.rs`:  
+```
+use write_and_test;
+
+#[test]
+fn it_adds_two() {
+    assert_eq!(4, write_and_test::add_two(2));
+}
+```
+#### 运行指定的集成测试
+* 运行一个特定的集成测试: cargo test 函数名
+* 运行某个测试文件内的所有测试: cargo test --test 文件名
+* 运行所有集成测试: cargo test --test integration_test
+    * `cargo test --test integration_tests`
+
+#### 集成测试中的子模块
+* tests 目录下每个文件被编译成单独的crate
+    * 这些文件不共享行为(与src下的文件规则不同)
+
+#### 针对binary crate的集成测试
+* 如果项目是binary crate, 只含有src/main.rs, 没有src/lib.rs
+    * 无法在tests目录下创建集成测试
+    * 无法把main 函数导入作用域
+
+* 只有binary crate 才能暴露给其他crate用
+* binary crate 意味着独立运行
 

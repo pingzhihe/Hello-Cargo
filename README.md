@@ -16,5 +16,5 @@ https://www.bilibili.com/video/BV1hp4y1k7SV/?spm_id_from=333.999.0.0&vd_source=c
 [7.error-handle](https://github.com/pingzhihe/Hello-Cargo/tree/master/error-handle) 错误处理  
 [8.generics](https://github.com/pingzhihe/Hello-Cargo/tree/master/_generics)  泛型  
 [9.life-time](https://github.com/pingzhihe/Hello-Cargo/tree/master/_life-time) Rust 的生命周期  
-[10.testing](https://github.com/pingzhihe/Hello-Cargo/blob/master/write-and-test) 编写自动化测试 `keep updating...`    
+[10.testing](https://github.com/pingzhihe/Hello-Cargo/blob/master/write-and-test) 编写自动化测试   
 [11.closure](https://github.com/pingzhihe/Hello-Cargo/tree/master/closure) 闭包  `keep updating...`  

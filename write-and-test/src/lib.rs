@@ -1,32 +1,17 @@
-
-
-pub struct Guess {
-    value: i32,
+pub fn add_two(a:i32)->i32{
+    a+2
+}
+fn internal_adder(a:i32,b:i32)->i32{
+    a+b
 }
 
-impl Guess {
-    pub fn new(value: i32) -> Guess {
-        if value < 1 {
-            panic!("Guess value must be great or equal to 1 got {}.",
-            value
-            )
-        } else if value > 100 {
-            panic!("Guess value must be less than or equal to 100 got {}.",
-            value
-            )
-        }
-        Guess {value}
-    }
-}
 #[cfg(test)]
 mod tests{
+    use super::*;
     #[test]
-    fn if_works() -> Result<(), String>{
-        if 2+3 == 4{
-            Ok(())
-        } else{
-            Err(String::from("two plus two does not equal to four")
-            )    
-        }
+    fn internal(){
+        assert_eq!(4,internal_adder(2,2));
     }
+
+
 }
