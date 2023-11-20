@@ -377,3 +377,7 @@ fn using_other_iterator_trait_methods(){
     assert_eq!(18, sum);
 }
 ```
+## 性能比较: 循环 vs 迭代器
+* 迭代器的性能不会比手写的循环差
+### 零开销抽象 Zero-Cost Abstractions
+* 使用抽象的时候不会引入额外运行时开销

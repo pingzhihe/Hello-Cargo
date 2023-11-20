@@ -17,5 +17,6 @@ https://www.bilibili.com/video/BV1hp4y1k7SV/?spm_id_from=333.999.0.0&vd_source=c
 [8.generics](https://github.com/pingzhihe/Hello-Cargo/tree/master/_generics)  泛型  
 [9.life-time](https://github.com/pingzhihe/Hello-Cargo/tree/master/_life-time) Rust 的生命周期  
 [10.testing](https://github.com/pingzhihe/Hello-Cargo/blob/master/write-and-test) 编写自动化测试  
-[11.minigrep](https://github.com/pingzhihe/Hello-Cargo/tree/master/minigrep) 项目实践:构建一个命令行程序  
-[12.closure](https://github.com/pingzhihe/Hello-Cargo/tree/master/closure) 闭包  `keep updating...`  
+[11.minigrep](https://github.com/pingzhihe/Hello-Cargo/tree/master/minigrep) 项目实践:构建一个命令行程序  `need to be improved`  
+[12.closure](https://github.com/pingzhihe/Hello-Cargo/tree/master/closure) 闭包  
+
