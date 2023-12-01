@@ -347,7 +347,7 @@ fn main(){
 
 * 两个List共享另一个List的所有权
 
-    <img src="images/image-3.png" alt="multi-owner" width="250">
+    <img src="images/image-4.png" alt="multi-owner" width="250">
 
 ```
 enum List{
@@ -404,3 +404,10 @@ fn main(){
     * 因借用计数产生些许性能损失
     * 实现某些特定的内存安全场景(不可变环境中修改自身数据)
 
+### `RefCell<T>` 
+* 与 `Rc<T>` 类似, 只能用于单线程场景
+
+### 选择 `Box<T>` `Rc<T>` `RefCell<T>`的依据
+<img src="images/image-5.png" alt="comparison" width="500">
+
+### 内部可变性: 可变借用一个不可变的值
