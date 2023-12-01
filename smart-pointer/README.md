@@ -143,5 +143,264 @@ enum List{
 ```
 
 ## Deref Trait
+* 实现了 `Deref` trait 使我们可以自定义解引用运算符 `*`的行为
+* 通过实现 `Deref`, 智能指针可像常规引用一样来处理
 
+### 解引用运算符
+* 常规引用是一种指针
+```
+fn main() {
+    let x = 5;
+    let y = &x;
+
+    assert_eq!(5,x);
+    assert_eq!(5,*y);
+}
+```
+这里的y就相当于是一个指针, `*y` 就是取y这个指针指向的值  
+如果去掉`*` 我们: ` assert_eq!(5,*y);` 就会报错`` no implementation for `{integer} == &{integer}` ``  
+
+### 把`Box<T>`  当作引用
+* `Box<T>` 可以代替上例中的引用
+```
+
+
+fn main() {
+    let x = 5;
+    let y = Box::new(x);
+
+    assert_eq!(5,x);
+    assert_eq!(5,*y);
+}
+
+```
+
+### 定义自己的智能指针
+* `Box<T>` 被定义成拥有一个元素的tuple struct
+* (例子) `MyBox<T>`
+```
+struct MyBox<T>(T);
+
+impl<T> MyBox<T>{
+    fn new(x:T) -> MyBox<T>{
+        MyBox(x)
+    }
+}
+
+fn main() {
+    let x = 5;
+    let y = MyBox::new(x);
+
+    assert_eq!(5,x);
+    assert_eq!(5,*y);
+}
+```
+但是这里会报错因为没有实现 `Deref` trait  
+
+### 实现 `Deref` trait 
+* 标准库中的 `Deref` trait 要求我们实现一个 `deref` 方法
+    * 该方法借用 `self` 
+    * 返回一个指向内部数据的引用
+```
+use std::ops::Deref;
+
+struct MyBox<T>(T);
+
+impl<T> MyBox<T>{
+    fn new(x:T) -> MyBox<T>{
+        MyBox(x)
+    }
+}
+
+impl<T> Deref for MyBox<T>{
+    type Target = T;
+
+    fn deref(&self) ->&T{
+        &self.0
+    }
+}
+
+
+fn main() {
+    let x = 5;
+    let y = MyBox::new(x);
+
+    assert_eq!(5,x);
+    assert_eq!(5,*y);
+}
+
+```
+### 函数方法的隐式解引用转化(Deref coercion)
+* 隐式解引用转化(Deref coercion) 是为函数和方法提供的一种便捷特性
+* 假设T实现了 `Deref` trait:
+    * Deref Coercion  可以把T的引用转化为T经过Deref操作后生成的引用
+
+* 当把某类型的引用传递给函数或者方法时, 但它的类型与定义的参数类型不匹配: 
+    * Deref Coercion 就会自动发生
+    * 编译器会对deref进行一系列调用, 来把它转化为所需的参数类型
+        * 在编译时完成, 没有额外的性能开销
+```
+use std::ops::Deref;
+
+fn hello(name : &str){
+    println!("hello,{}", name);
+}
+
+fn main() {
+    let m = MyBox::new(String::from("Rust"));
+    // &m & MyBox<String>
+    // deref &String
+    // deref &str
+    hello(&m);
+    // equals to 
+    hello(&(*m)[..]);
+    
+}
+
+
+struct MyBox<T>(T);
+
+impl<T> MyBox<T>{
+    fn new(x:T) -> MyBox<T>{
+        MyBox(x)
+    }
+}
+
+impl<T> Deref for MyBox<T>{
+    type Target = T;
+
+    fn deref(&self) ->&T{
+        &self.0
+    }
+}
+
+```
+
+### 解引用与可变性
+* 可使用`DerefMut` trait 来重载可变引用的*运算符
+    * 当`T: Deref<Target=U>` 允许&T转换为&U
+    * 当`T: DerefMut<Target=U>` 允许&mut T转换为&mut U
+    * 当`T: Deref<Target=U>` 允许&mut T转换为&U
+
+
+## `Drop` trait
+* 实现了 `Drop` trait 可以让我们自定义当一个值离开作用域时发生的动作
+    * 例如: 文件, 网络资源释放等
+    * 任何类型都可以实现 `Drop` trait
+
+* `Drop` trait 只要求你实现 `drop` 方法
+    * 参数: 对self的可变引用
+
+* `Drop` trait 在预导入模块里(Prelude)
+
+```
+struct CustomSmartPointer{
+    data: String,
+}
+
+impl Drop for CustomSmartPointer{
+    fn drop(&mut self) {
+        println!("Dropping CustomSmartPointer with data`{}`!",self.data);
+    }
+}
+
+fn main(){
+    let c = CustomSmartPointer{data:String::from("my stuff")};
+    let d = CustomSmartPointer{data:String::from("other stuff")};
+    println!("CustomSmartPointer created")
+}
+```
+
+### 使用std::mem::drop 来提前drop值
+* 很难直接禁用自动的drop功能, 也没必要
+    * Drop trait 的目的主要是进行自动地释放处理逻辑
+* Rust 不允许手动调用Drop trait 的drop方法
+* 但是可以调用标准库的 `std::mem::drop` 函数来提前释放值
+```
+fn main(){
+    let c = CustomSmartPointer{data:String::from("my stuff")};
+    drop(c);
+    let d = CustomSmartPointer{data:String::from("other stuff")};
+    println!("CustomSmartPointer created")
+}
+```
+
+## `Rc<T>` 引用计数智能指针
+* 有时, 一个值会有多个所有者
+
+    <img src="images/image-3.png" alt="multi-owner" width="250">
+
+* 为了支持多重所有权: `Rc<T>` 
+    * reference counting (引用计数)
+    * 可以追踪所有到值的引用
+    * 0个引用, 该值可以被清理
+
+### `Rc<T>` 的使用场景
+* 需要在heap上分配数据, 这些数据被程序的多个部分读取(只读), 但在编译时无法确定哪个部分最后使用完这些数据
+* `Rc<T>` 只能用于单线程场景
+
+### `Rc<T>` 的例子
+* `Rc<T>` 不在预导入模块(preludez) 中
+* Rc::clone(&a)函数: 会增加引用计数
+* Rc::strong_count(&a)函数: 获得强引用计数
+    * Rc::weak_count(&a)函数: 获得弱引用计数
+
+* 两个List共享另一个List的所有权
+
+    <img src="images/image-3.png" alt="multi-owner" width="250">
+
+```
+enum List{
+    Cons(i32, Rc<List>),
+    Nil
+}
+
+use crate::List::{Cons, Nil};
+use std::rc::Rc;
+
+fn main(){
+    let a = Rc::new(Cons(5,Rc::new(Cons(10,Rc::new(Nil)))));
+    
+    let b = Cons(3, Rc::clone(&a));
+    let c = Cons(4, Rc::clone(&a));
+}
+```
+### Rc::clone vs clone() 方法
+* Rc::clone(): 增加引用, 不会执行数据的深拷贝操作
+* 类型的clone() 方法: 很多会执行数据的深拷贝操作
+
+### `Rc<T>`
+* `Rc<T>` 通过不可变引用, 使你可以在程序的不同部分之间共享只读数据
+
+## `RefCell<T>` 和内部可变性(Interior mutability)
+* 内部可变性是Rust的设计模式之一
+* 它允许你在只持有不可变引用的情况下对数据进行修改
+    * 数据结构中使用了unsafe代码来绕过Rust正常的可变性和借用规则
+
+### `RefCell<T>` 
+* 与 `Rc<T>` 不同, `RefCell<T>` 类型代表了其持有数据的唯一所有权
+
+#### 复习借用规则：
+* 在任何给定的时间里, 你要么只能拥有一个可变引用, 要么只能任意数量的不可变引用  
+* 引用总司有效的
+
+### `RefCell<T>` 与`Box<T>` 的区别
+* `Box<T>`
+    * 编译阶段强制代码遵守借用规则
+    * 否则出现错误
+* `RefCell<T>`
+    * 只会在运行时检查借用规则
+    * 否则触发panic
+
+### 借用规则在不同阶段检查的比较
+* 编译阶段:
+    * 尽早暴露问题
+    * 没有任何运行时开销
+    * 对大多数场景是最佳选择
+    * 是Rust的默认行为
+
+* 运行时:
+    * 问题暴露延后, 甚至到生产环境
+    * 因借用计数产生些许性能损失
+    * 实现某些特定的内存安全场景(不可变环境中修改自身数据)
 
