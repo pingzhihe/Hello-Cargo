@@ -28,7 +28,7 @@
     * 需要更大的运行时
 
 * Rust: 需要权衡运行时的支持
-* Rust 标准库仅提供1:1模型的线程
+* Rust 标准库仅提供1:1模型的线程    
 
 ### 通过spawn创建新线程
 * 使用thread::spawn函数来创建新线程
@@ -52,3 +52,44 @@ fn main() {
 }
 ```
 ### 通过join Handle来等待所有线程完成
+* thread::spawn 函数的返回值是 JoinHandle
+* JoinHandle 持有值的所有权
+    * 调用其join方法, 可以等待对应的其它线程的完成
+* join方法: 调用handle 的join 方法会阻止当前运行的线程的执行,直到handle 所表示的这些线程的终结
+
+### 使用move闭包
+* move 闭包通常和thread::spawn一起使用, 它允许你使用其它线程的数据
+* 在创建线程的时候, 把值的所有权从一个线程转移到另一个线程
+```
+use std::thread;
+fn main() {
+    let v = vec![1,2,3];
+    let handle = thread::spawn(move ||  {
+        println!("Here's a vector {:?}", v);
+    });
+
+    handle.join().unwrap();
+
+}
+
+```
+
+## 使用消息传递来在线程间转移数据
+### 消息传递
+* 一种很流行且能保证安全并发的技术就说: 消息传递
+    * 线程(或Actor)通过彼此发送消息(数据)来进行通信
+
+* Go 语言的名言: 不要用共享内存来通信, 用通信来共享内存
+
+* Rust: Channel (标准库提供)
+
+### Channel 
+* Channel 包含: 发送端,接收端
+* 调用发送端的方法, 发送数据
+* 接收端会检查和接收到达的数据
+* 如果发送端, 接受端中任意一端被丢弃了, 那么Channel就关闭了
+ 
+### 创建新的Channel
+* 使用`mpsc::channel`函数创建一个新的channel
+    * mpsc表示multiple producer, single consumer(多个生产者, 一个消费者)
+    * 返回一个tuple(元组): 里面分别是发送端和接收端

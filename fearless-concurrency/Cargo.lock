@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "Fearless-Concurrency"
+name = "fearless-concurrency"
 version = "0.1.0"
