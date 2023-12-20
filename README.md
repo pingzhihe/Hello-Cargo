@@ -20,4 +20,4 @@ https://www.bilibili.com/video/BV1hp4y1k7SV/?spm_id_from=333.999.0.0&vd_source=c
 [11.minigrep](https://github.com/pingzhihe/Hello-Cargo/tree/master/minigrep) 项目实践:构建一个命令行程序  `need to be improved`  
 [12.closure](https://github.com/pingzhihe/Hello-Cargo/tree/master/closure) 闭包  
 [13.smart-pointer](https://github.com/pingzhihe/Hello-Cargo/tree/master/smart-pointer) 智能指针  
-[14.fearless-concurrency](https://github.com/pingzhihe/Hello-Cargo/tree/master/Fearless-Concurrency) 无畏并发  `keep learning...`  
+[14.fearless-concurrency](https://github.com/pingzhihe/Hello-Cargo/tree/master/fearless-concurrency) 无畏并发  `keep learning...`  

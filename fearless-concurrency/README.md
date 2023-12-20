@@ -93,3 +93,149 @@ fn main() {
 * 使用`mpsc::channel`函数创建一个新的channel
     * mpsc表示multiple producer, single consumer(多个生产者, 一个消费者)
     * 返回一个tuple(元组): 里面分别是发送端和接收端
+```
+use std::sync::mpsc;
+use std::thread;
+
+fn main(){
+    let (tx, rx) = mpsc::channel();
+
+    thread::spawn(move || {
+        let val = String::from("hi");
+        tx.send(val).unwrap();
+    });
+    let received = rx.recv().unwrap();
+
+    println!("Got:{}", received);
+    
+}
+```
+
+### 接收端的方法
+*   
+    * 一旦有值收到, 就返回`Result<T, E>` 
+    * 当发送端关闭时, 返回一个错误值
+
+* try_recv 方法: 不会阻止线程, 直接返回一个`Result<T, E>`
+    * Ok 值包含可用的信息
+    * 否则, 返回一个错误值
+
+* 通常会使用循环调用来检查try_recv的结果
+
+### Channel 和所有权转移
+* 所有权在消息传递中非常重要: 能帮你编写安全, 并发的代码
+```
+use std::sync::mpsc;
+use std::thread;
+
+fn main(){
+    let (tx, rx) = mpsc::channel();
+
+    thread::spawn(move || {
+        let val = String::from("hi");
+        tx.send(val).unwrap();
+        println!("val is {}", val);
+    });
+    let received = rx.recv().unwrap();
+
+    println!("Got:{}", received);
+    
+}
+```
+println!("val is {}", val); 会报错: `value borrowed here after move`  
+
+
+### 发送多个值, 看到接收者在等待
+```
+use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
+
+fn main(){
+    let (tx, rx) = mpsc::channel();
+
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("hi"),
+            String::from("from"),
+            String::from("the"),
+            String::from("thread")
+        ];
+        for val in vals{
+            tx.send(val).unwrap();
+            thread::sleep(Duration::from_millis(200));
+        }
+    });
+
+    for received in rx{
+        println!("Got: {}", received);
+    }   
+}
+```
+
+### 通过克隆创建多个发送者
+```
+use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
+
+fn main(){
+    let (tx, rx) = mpsc::channel();
+    let tx1 = mpsc::Sender::clone(&tx);
+
+    thread::spawn(move || {
+        let vals = vec![
+            String::from("1:hi"),
+            String::from("1:from"),
+            String::from("1:the"),
+            String::from("1:thread")
+        ];
+        for val in vals{
+            tx1.send(val).unwrap();
+            thread::sleep(Duration::from_millis(200));
+        }
+    });
+
+    thread::spawn(move||{
+        let vals = vec![
+            String::from("hi"),
+            String::from("from"),
+            String::from("the"),
+            String::from("thread")
+        ];
+        for val in vals{
+            tx.send(val).unwrap();
+            thread::sleep(Duration::from_millis(200));
+        }
+    });
+
+    for received in rx{
+        println!("Got: {}", received);
+    }
+   
+}
+```
+
+## 共享状态的并发
+* Go 语言的名言: 不要用共享内存来通信, 用通信来共享内存
+* Rust 支持通过共享状态来实现并发
+* Channel 类似单所有权: 一旦将值的所有权转移至Channel, 就无法使用它了
+
+* 共享内存并发类似多所有权, 多个线程可以同时访问同一块内存
+
+### 使用Mutex来每次只允许一格线程来访问数据
+* Mutex是mutual exclusion(互斥锁)的简写
+
+* 在同一时刻, Mutex只允许一个线程来访问某些数据
+* 想要访问数据
+    * 线程必须首先获取互斥锁
+        * lock 数据结构是mutex的一部分, 它能跟踪谁对数据拥有独占访问权
+    * mutex 通常被描述为: 通过锁定系统来保护它所持有的数据
+
+### Mutex的两条规则
+* 在使用数据之前, 必须尝试获得锁(lock)
+* 使用完mutex所保护的数据, 必须对数据进行解锁, 以便其它线程可以获取锁
+
+### `Mutex<T>`的API
+* 通过Mutex::new(数据)来创建`Mutex<T>`
+
