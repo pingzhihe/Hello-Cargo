@@ -238,4 +238,55 @@ fn main(){
 
 ### `Mutex<T>`的API
 * 通过Mutex::new(数据)来创建`Mutex<T>`
+    * `Mutex<T>` 是一个智能指针
 
+* 访问数据前,通过lock方法来获取锁
+    * 会阻塞当前线程
+    * lock可能会失败
+    * 返回的是 MutexGuard (智能指针, 实现了Deref和Drop)
+
+```
+use std::sync::Mutex;
+
+fn main(){
+    let m = Mutex::new(5);
+
+    {
+        let mut num = m.lock().unwrap();
+        *num = 6;
+    }
+    println!("m = {:?}",m);
+    
+}
+```
+### 多线程共享`Mutex<T>`
+
+### 使用`Arc<T>`来在多个线程间共享所有权
+* `Arc<T>`是atomically reference counted(原子引用计数)的缩写
+* `Arc<T>` 和 `Rc<T>` 类似, 它可以用于并发场景
+* 为什么所有的基础类型都不是原子的, 为什么标准库不默认使用`Arc<T>`?
+    * 需要牺牲性能作为代价
+
+* `Arc<T>` 和 `Rc<T>` 的API是相同的
+```
+use std::sync::{Mutex, Arc};
+use std::thread;
+fn main(){
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
+    for _ in 0..10{
+        let counter = Arc::clone(&counter);
+        let handle = thread::spawn(move ||{
+            let mut num = counter.lock().unwrap();
+
+            *num += 1;
+        });
+        handles.push(handle);
+    }   
+    for handle in handles{
+        handle.join().unwrap();
+    }   
+    println!("Result:{}", *counter.lock().unwrap());
+    
+}
+```
