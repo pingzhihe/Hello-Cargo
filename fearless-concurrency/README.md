@@ -290,3 +290,36 @@ fn main(){
     
 }
 ```
+
+### `RefCell<T>/Rc<T>` vs `Mutex<T>/Arc<T>`
+* `Mutex<T>` 提供了内部可变性, 和Cell家族一样
+* 我们使用`RefCell<T>` 来改变`Rc<T>`里面的内容
+* 我们使用`Mutex<T>` 来改变`Arc<T>`里面的内容
+* 注意: `Mutex<T>`有死锁风险
+
+## 使用Sync和Send trait的可扩展并发
+### Send 和 Sync trait
+* Rust 语言的并发特性较少, 目前讲的并发新特性都来自标准库(而不是语言本身)
+* 无需局限于标准库的并发, 可以自己实现并发
+* 但在Rust语言中有两个并发的概念:
+    * std::marker::Sync 和 std::marker::Send 这两个trait
+
+### Send：允许线程间转移所有权
+* 实现Send trait 的类型可在线程间转移所有权
+* Rust中几乎所有的类型都实现了Send
+    * 但`Rc<T>`没有实现Send, 它只用于单线程场景
+* 任何完全由Send类型组成的类型也被标记为Send
+* 除了原始指针之外, 几乎所有的基础类型都是Send
+
+### Sync: 允许从多线程访问
+* 实现Sync的线程可以安全地被多个线程引用
+* 也就是说: 如果T是Sync, 那么 &T 就是Send
+    * 引用可以被安全的送往另一个线程
+* 基础类型都是Sync
+* 完全由Sync类型组成的类型也是Sync
+    * 但, `Rc<T>` 不是Sync的
+    * `RefCell<T>` 和 `Cell<T>` 家族也不是Sync的
+    * 而, `Mutex<T>` 是Sync的
+
+### 手动来实现Send和Sync是不安全的
+* 记住上面的话即可
