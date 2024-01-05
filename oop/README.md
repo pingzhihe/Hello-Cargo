@@ -20,3 +20,30 @@
     * pub 关键字可以修饰 struct, enum, trait, impl 块, 方法, 函数, use 语句
     * pub 关键字可以修饰模块, 但模块的内容默认是私有的
     * pub 关键字可以修饰 use 语句, 但 use 语句默认是私有的
+
+### 继承
+* 继承: 使对象可以沿用另外一个对象的数据和行为, 且无需重复定义相关代码
+* Rust 没有继承
+* 使用继承的原因: 
+    * 代码复用
+        * Rust: 默认trait方法来代码共享
+    * 多态
+        * Rust: 泛型和trait约束(限定参数化多态 bounded parametric)
+    
+* 很多新语言都不使用继承作为内置程序设计方案了
+
+## 有这样一个需求
+* 创建一个GUI工具:
+    * 它会遍历某个元素的列表, 依次调用元素draw方法来绘制
+    * 例如: Button, TextField  等元素
+
+* 在面对对象里: 
+    * 定义一个Component父类, 里面定义了draw方法
+    * 定义Button, TextField 等类, 继承于Component类
+
+## Rust的解决方案
+### 为共有行为定义trait
+* Rust避免将struct或enum作为对象, 因为它们与impl块是分开的
+* trait 对象有些类似其它语言的对象:
+    * 它们某种程度上组合了数据与行为
+
