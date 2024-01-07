@@ -23,4 +23,4 @@ https://www.bilibili.com/video/BV1hp4y1k7SV/?spm_id_from=333.999.0.0&vd_source=c
 [14.fearless-concurrency](https://github.com/pingzhihe/Hello-Cargo/tree/master/fearless-concurrency) 无畏并发  `keep learning...`  
 [15.object-oriented-program](https://github.com/pingzhihe/Hello-Cargo/tree/master/oop) 面向对象编程  `keep learning...`    
 
-Rust 语言的学习曲线较为陡峭 Orz。
+Rust 语言的学习曲线较为陡峭 Orz。刷题中。。。
